@@ -4,18 +4,29 @@ import json
 from tlscertificate import TLSCertificate
 import os, errno
 
-def getCertDetails(filename):
+def getCertDetails(filename):	
+	tlscerts = []
 	with open(filename, "rb") as f:
-		cert = f.read()		
-		tlscert = TLSCertificate(cert)
-		return tlscert
+		cert_data = f.read()
+		tlscert = TLSCertificate()
+		certs = tlscert.splitPemStrings(cert_data)
+		for cert in certs:
+			tlscerts.append( tlscert.loadCertificate(cert) )				
+		return tlscerts
 
-def saveOriginCert(origin, pem_file, use_sni=False):	
-	certificate = subprocess.check_output(['openssl', 's_client', '-showcerts', '-connect', origin+':443'],stdin=subprocess.PIPE,stderr=None)		
-	with open(pem_file,'wb') as pem_file:	
-		pem_file.write('-----BEGIN CERTIFICATE-----'+ certificate.split('-----BEGIN CERTIFICATE-----')[1].split('-----END CERTIFICATE-----')[0] + '-----END CERTIFICATE-----')
+def saveOriginCert(origin, pem_file, use_sni):		
+	
+	command = ['openssl', 's_client', '-showcerts', '-connect', origin+':443']
+	if use_sni==True:
+		command.append('-servername')
+		command.append(origin)
+	
+	openssl_data = subprocess.check_output(command ,stdin=subprocess.PIPE,stderr=subprocess.PIPE)		
+	tlscert = TLSCertificate()
+	tlscert.writePemFile(pem_file, openssl_data)
 		
-def createPapiRule(papiFile, tlscert):
+		
+def createPapiRule(papiFile, tlscerts):
 	rules = None
 	with open(papiFile, 'r') as papiRules:	
 		rules = json.loads(papiRules.read())
@@ -23,17 +34,16 @@ def createPapiRule(papiFile, tlscert):
 			if behavior['name']=="origin":
 				origin_behavior_options = behavior['options']
 				#reset the origin cert behavior field
-				origin_behavior_options['customCertificates'] = [{}]
+				origin_behavior_options['customCertificates'] = []
 				origin_behavior_options['verificationMode'] = 'CUSTOM'
 				origin_behavior_options['originCertsToHonor'] = 'CUSTOM_CERTIFICATES'
 				origin_behavior_options['customValidCnValues'] = [\
 															            "{{Origin Hostname}}",\
 															            "{{Forward Host Header}}"\
      															  ]
-				origin_certificate = origin_behavior_options['customCertificates'][0]
-				origin_certificate['sha1Fingerprint'] = tlscert.get_sha1Fingerprint()
-				origin_certificate['pemEncodedCert'] = tlscert.get_pemEncodedCert()
-
+				for tlscert in tlscerts:
+					origin_certificate = origin_behavior_options['customCertificates'].append(tlscert)
+					
 				#print behavior
 
 	with open(papiFile,'w') as papiRules:
@@ -62,7 +72,7 @@ if __name__=="__main__":
 		parser.error("Either the pem file (--pem_file) or the origin name (--origin) has to be specified")
 
 	if args.origin is not None:		
-		saveOriginCert(args.origin, pem_file)
+		saveOriginCert(args.origin, pem_file, args.use_sni)
 		
 	tlscert = getCertDetails(pem_file)	
 	createPapiRule(args.file, tlscert)
