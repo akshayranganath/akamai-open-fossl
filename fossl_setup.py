@@ -50,9 +50,9 @@ def cleanup(pem_file="cert.txt"):
 
 if __name__=="__main__":
 	parser = argparse.ArgumentParser(description='Script to create the FOSSL setting for your origin \and update your configuration rules')
-	parser.add_argument('--file', help="PAPI Rules file to update with the FOSSL details",required=True )
-	parser.add_argument('--pem_file',  help="Origin's PEM file to use for creating FOSSL section")
-	parser.add_argument('--origin', help="Origin server name")
+	parser.add_argument('--file', help="PAPI Rules file to update with the FOSSL details",required=True )	
+	parser.add_argument('--origin', help="Origin server name. Using openssl, the TLS cert will be downloaded and stored in 'pem_file'")
+	parser.add_argument('--pem_file',  help="Origin's PEM file to use for creating FOSSL section. If unspecified, a temporary file called cert.txt will be created.")
 	parser.add_argument('--use_sni', help="Use SNI header when pulling the origin certificate", action="store_true")
 	args = parser.parse_args()	
 
