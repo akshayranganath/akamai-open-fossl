@@ -9,8 +9,7 @@ $ python fossl_setup.py --help
 usage: fossl_setup.py [-h] --file FILE [--origin ORIGIN] [--pem_file PEM_FILE]
                       [--use_sni]
 
-Script to create the FOSSL setting for your origin and update your
-configuration rules
+Script to create the FOSSL setting for your origin and update your configuration rules
 
 optional arguments:
   -h, --help           show this help message and exit
