@@ -44,14 +44,13 @@ def createPapiRule(papiFile, tlscerts):
 				for tlscert in tlscerts:
 					origin_certificate = origin_behavior_options['customCertificates'].append(tlscert)
 					
-				#print behavior
+				
 
 	with open(papiFile,'w') as papiRules:
 		papiRules.write( json.dumps(rules, indent=2, sort_keys=True) )
 	print "Papi file updated"
-				#print json.dumps(behavior)
-
-	#now find the correct place in the rule hierarchy
+				
+	
 
 def cleanup(pem_file="cert.txt"):	
 	os.remove(pem_file)	
@@ -59,11 +58,11 @@ def cleanup(pem_file="cert.txt"):
 
 
 if __name__=="__main__":
-	parser = argparse.ArgumentParser(description='Script to create the FOSSL setting for your origin \and update your configuration rules')
+	parser = argparse.ArgumentParser(description='Script to create the FOSSL setting for your origin and update your configuration rules')
 	parser.add_argument('--file', help="PAPI Rules file to update with the FOSSL details",required=True )	
 	parser.add_argument('--origin', help="Origin server name. Using openssl, the TLS cert will be downloaded and stored in 'pem_file'")
 	parser.add_argument('--pem_file',  help="Origin's PEM file to use for creating FOSSL section. If unspecified, a temporary file called cert.txt will be created.")
-	parser.add_argument('--use_sni', help="Use SNI header when pulling the origin certificate", action="store_true")
+	parser.add_argument('--use_sni', help="(Boolena) If present, then use SNI header when pulling the origin certificate", action="store_true")
 	args = parser.parse_args()	
 
 	pem_file = "cert.txt" if args.pem_file is None else args.pem_file	
