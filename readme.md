@@ -20,4 +20,21 @@ optional arguments:
                        unspecified, a temporary file called cert.txt will be
                        created.
   --use_sni            Use SNI header when pulling the origin certificate
- ```
+```
+
+ 
+## Background
+
+While building a __secure configuration__ on the Akamai platform, you will need to provide the origin server's certificate information. Normally, if you have a standard Certificate Authority (CA), no special setting may be required. However, if you are using a self-signed certificate or a CA that is considered as part of standard Akamai supported set, you will need to __pin__ the TLS certificate.
+
+If you need to pin the origin certificate using the Property Manager interface, the UI runs the following command to extract the details:
+
+	openssl s_client -connect origin-server.customer.com:443
+
+However, when using the Property Manager API (PAPI) or while using the [Akamai Configkit](https://github.com/akamai-open/akamaiconfigkit-public), you would need to follow these steps:
+
+- Pull in the origin certificate and add the details by running the openssl command. If origin is not accessible due to ACL, get the certification information from the Ops teams.
+- Run a PAPI / ConfigKit command to extract the rules for the configuration.
+- Insert the certificate details and push out a new version of the configuration.
+
+The FOSSL helper function tries to automate this part of the job. If you already have the configuration rules, helper function will run the openssl commands and then insert the certificate details into the correct section. Using PAPI/Config Kit.
