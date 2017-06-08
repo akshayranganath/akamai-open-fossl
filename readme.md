@@ -38,3 +38,30 @@ However, when using the Property Manager API (PAPI) or while using the [Akamai C
 - Insert the certificate details and push out a new version of the configuration.
 
 The FOSSL helper function tries to automate this part of the job. If you already have the configuration rules, helper function will run the openssl commands and then insert the certificate details into the correct section. Using PAPI/Config Kit.
+
+## Cert Update Pipeline
+
+Here's the steps to update your rules to use the new cert.
+
+### Step 1: Get the current configuration rules.
+Suppose the configuration file at Akamai is named __papitest2.demo.com__. Here's the method to get back the rules.
+  
+  ./akamaiProperty retrieve papitest2.demo.com --file rules.json
+
+### Step 2: Run fossl_setup.py
+
+Assuming that the origin is not ACLed for just Akamai, you can run this script to pull the origin certificate and insert it into rules.
+
+  python fossl_setup.py --file rules.json --origin akshayranganath.github.io
+
+### Step 3: Update rules
+After the rules have been updated with the certificate information, run the _akamaiProperty_ command to push out the update to the configuration on Akamai.
+
+    ./akamaiProperty update papitest2.demo.com --file rules.json
+
+### Step 4: Activate configuration
+Once the update completes, you should be able to push the configuration out to Akamai staging network and test the new setup.
+
+  ./akamaiProperty activate papitest2.demo.com
+
+This will the latest configuration version to staging. Please see the documentation at [Akamai ConfigKit](https://github.com/akamai-open/akamaiconfigkit-public) page for more details.
