@@ -4,9 +4,9 @@ This module will provide helper functions to easily pull the origin's PEM file a
 
 ## Setup
 After downloading the code, execute the following to install the libraries.
-
-  pip -r requirements.txt
-
+```bash
+pip -r requirements.txt
+```
 
 ## Usage
 The main python file is fossl_setup.py. CLI usage is as follows:
