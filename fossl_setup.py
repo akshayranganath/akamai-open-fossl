@@ -6,6 +6,17 @@ from tlscertificate import TLSCertificate
 import os, errno
 
 def getCertDetails(filename):	
+	"""	
+	Arguments: 
+		filename: File contaning PEM encoded certificates.
+	
+	Returns: 
+		list of tls certificates (TLSCertificate objects)
+
+	Description:
+		Takes the openssl output data and extracts the PEM encoded certificate information. 
+		It can handle muliple certificate details when a chain is presented.
+	"""
 	tlscerts = []
 	with open(filename, "rb") as f:
 		cert_data = f.read()
@@ -16,7 +27,19 @@ def getCertDetails(filename):
 		return tlscerts
 
 def saveOriginCert(origin, pem_file, use_sni):		
+	"""
+	Arguments: 
+		origin: DNS name of the origin. It can also be an IP address.
+		pem_file: File name to store the PEM-encoded TLS certificate retrieved from origin. Default storage path is the current director.
+		use_sni: If enabled, --servername option is used with openssl command. Value is same as origin.
+		TO_DO: Allow overriding the servername parameter.
 	
+	Returns: 
+		None
+
+	Description:
+		Executes openssl command and saves the certificate information to a file name passed in the argument 'pem_file'		
+	"""
 	command = ['openssl', 's_client', '-showcerts', '-connect', origin+':443']
 	if use_sni==True:
 		command.append('-servername')
@@ -28,6 +51,17 @@ def saveOriginCert(origin, pem_file, use_sni):
 		
 		
 def createPapiRule(papiFile, tlscerts):
+	"""
+	Arguments:
+		papiFile: Name of the file containing the PAPI rules.
+		tlscerts: List of objets of type TLSCertificate. 
+
+	Returns:
+		None
+
+	Desciption:
+		Update the PAPI rules by replacing the default origin TLS certificate details with the certificates passed to this function. 	
+	"""
 	rules = None
 	with open(papiFile, 'r') as papiRules:	
 		rules = json.loads(papiRules.read())
@@ -54,6 +88,14 @@ def createPapiRule(papiFile, tlscerts):
 	
 
 def cleanup(pem_file="cert.txt"):	
+	"""
+	Arguments:
+		pem_file: Remove the temporary file created to hold the PEM-encoded TLS certificate.
+
+	Returns:
+		None
+
+	"""
 	os.remove(pem_file)	
 
 
