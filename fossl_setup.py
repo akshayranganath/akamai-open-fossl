@@ -50,7 +50,7 @@ def saveOriginCert(origin, pem_file, use_sni):
 	tlscert.writePemFile(pem_file, openssl_data)
 		
 		
-def createPapiRule(papiFile, tlscerts):
+def createPapiRule(papiFile, tlscerts, appendCerts):
 	"""
 	Arguments:
 		papiFile: Name of the file containing the PAPI rules.
@@ -68,14 +68,18 @@ def createPapiRule(papiFile, tlscerts):
 		for behavior in rules['rules']['behaviors']:			
 			if behavior['name']=="origin":
 				origin_behavior_options = behavior['options']
-				#reset the origin cert behavior field
-				origin_behavior_options['customCertificates'] = []
-				origin_behavior_options['verificationMode'] = 'CUSTOM'
-				origin_behavior_options['originCertsToHonor'] = 'CUSTOM_CERTIFICATES'
-				origin_behavior_options['customValidCnValues'] = [\
-															            "{{Origin Hostname}}",\
-															            "{{Forward Host Header}}"\
-     															  ]
+				# reset the certificates only if appendCerts is not set
+				if appendCerts == False:
+					#reset the origin cert behavior field
+					origin_behavior_options['customCertificates'] = []
+					#reset any custom certificate authorities as well
+					origin_behavior_options['customCertificateAuthorities'] = []				
+					origin_behavior_options['verificationMode'] = 'CUSTOM'
+					origin_behavior_options['originCertsToHonor'] = 'CUSTOM_CERTIFICATES'
+					origin_behavior_options['customValidCnValues'] = [\
+																            "{{Origin Hostname}}",\
+																            "{{Forward Host Header}}"\
+	     															  ]
 				for tlscert in tlscerts:
 					origin_certificate = origin_behavior_options['customCertificates'].append(tlscert)
 					
@@ -105,7 +109,8 @@ if __name__=="__main__":
 	parser.add_argument('--file', help="PAPI Rules file to update with the FOSSL details",required=True )	
 	parser.add_argument('--origin', help="Origin server name. Using openssl, the TLS cert will be downloaded and stored in 'pem_file'")
 	parser.add_argument('--pem_file',  help="Origin's PEM file to use for creating FOSSL section. If unspecified, a temporary file called cert.txt will be created.")
-	parser.add_argument('--use_sni', help="(Boolena) If present, then use SNI header when pulling the origin certificate", action="store_true")
+	parser.add_argument('--use_sni', help="(Boolean) If present, then use SNI header when pulling the origin certificate", action="store_true")
+	parser.add_argument('--append_cert', help="(Boolean) If present, the origin certificate will be appended to existing set of origin certs. By default, the cert is replaced.",action="store_true") 
 	args = parser.parse_args()	
 
 	pem_file = "cert.txt" if args.pem_file is None else args.pem_file	
@@ -117,7 +122,7 @@ if __name__=="__main__":
 		saveOriginCert(args.origin, pem_file, args.use_sni)
 		
 	tlscert = getCertDetails(pem_file)	
-	createPapiRule(args.file, tlscert)
+	createPapiRule(args.file, tlscert, args.append_cert)
 	# remove the certificate file only if was created for the user.
 	if args.pem_file is None:
 		cleanup(pem_file)
