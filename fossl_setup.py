@@ -118,5 +118,6 @@ if __name__=="__main__":
 		
 	tlscert = getCertDetails(pem_file)	
 	createPapiRule(args.file, tlscert)
-	#cleanup is not needed as per the bug https://github.com/akshayranganath/akamai-open-fossl/issues/1
-	#cleanup(pem_file)
+	# remove the certificate file only if was created for the user.
+	if args.pem_file is None:
+		cleanup(pem_file)
