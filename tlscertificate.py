@@ -17,14 +17,14 @@ class TLSCertificate:
 		self.pemEncodedCert = None
 
 	def loadCertificate(self, cert):	
-	"""
-		Arguments:
-			cert: PEM encoded certificate, typically extracted from an openssl s_client call.
+		"""
+			Arguments:
+				cert: PEM encoded certificate, typically extracted from an openssl s_client call.
 
-		Returns:
-			Returns a dictionary with 2 parameters: { sha1Fingerprint, pemEncodedCert }
+			Returns:
+				Returns a dictionary with 2 parameters: { sha1Fingerprint, pemEncodedCert }
 
-	"""	
+		"""	
 		self.cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
 		self.sha1Fingerprint = self.cert.digest("sha1").lower().replace(':','')
 		self.pemEncodedCert = cert.replace('\n','')+'\\n'
