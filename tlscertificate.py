@@ -16,6 +16,13 @@ class TLSCertificate:
 		self.sha1Fingerprint = None
 		self.pemEncodedCert = None
 
+	def getCN(self, subject_tuple):
+		for (name,value) in subject_tuple:
+			if name=="CN":
+				return value
+
+		return None
+
 	def loadCertificate(self, cert):	
 		"""
 			Arguments:
@@ -28,9 +35,13 @@ class TLSCertificate:
 		self.cert = OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, cert)
 		self.sha1Fingerprint = self.cert.digest("sha1").lower().replace(':','')
 		self.pemEncodedCert = cert.replace('\n','')+'\\n'
+			
 		return { \
 				'sha1Fingerprint' : self.sha1Fingerprint, \
-				'pemEncodedCert' : 	self.pemEncodedCert \
+				'pemEncodedCert' : 	self.pemEncodedCert, \
+				'notBefore' : self.cert.get_notBefore(), \
+				'notAfter' : self.cert.get_notAfter(), \
+				'subjectCN' : self.getCN(self.cert.get_subject().get_components()) \
 			}
 
 	def getSha1Fingerprint(self):		
@@ -91,3 +102,9 @@ class TLSCertificate:
 
 	def __str__(self):
 		return "Fingerprint: "+self.sha1Fingerprint+"\n"+self.pemEncodedCert
+
+if __name__=="__main__":
+	data = open('cert2.txt').read()
+	cert = TLSCertificate()
+	print cert.loadCertificate(data)
+	
