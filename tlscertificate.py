@@ -102,9 +102,9 @@ class TLSCertificate:
 
 	def __str__(self):
 		return "Fingerprint: "+self.sha1Fingerprint+"\n"+self.pemEncodedCert
-
+'''
 if __name__=="__main__":
 	data = open('cert2.txt').read()
 	cert = TLSCertificate()
 	print cert.loadCertificate(data)
-	
+'''	
